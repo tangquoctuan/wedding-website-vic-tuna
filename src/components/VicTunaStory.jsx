@@ -24,7 +24,7 @@ export default function VicTunaStory() {
     },
     {
       id: 'gallery',
-      title: 'Memories',
+      title: 'Pre-Wedding',
       subtitle: 'A few captured moments',
       bg: '',
       images: [
