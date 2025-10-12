@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+  @apply bg-gray-900 text-white overflow-hidden;
+}
+
+.font-amsterdam {
+  font-family: "Sacramento", Arial, serif;
+}
+
+@media (max-width: 440px) {
+  .mt-30-iphone {
+    margin-top: 12.5rem; /* same as mt-30 */
+  }
+}
