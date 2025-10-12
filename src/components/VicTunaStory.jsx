@@ -165,7 +165,7 @@ function getAutoBgPosition(src, callback) {
   img.onerror = () => callback("center center");
 }
 
-// 📱 Swipe navigation (iPhone-safe)
+// 📱 Swipe-only navigation
 useEffect(() => {
   const el = containerRef.current;
   if (!el) return;
@@ -174,16 +174,14 @@ useEffect(() => {
   let startY = 0;
   let endX = 0;
   let endY = 0;
-  const threshold = 50; // min px swipe distance
+  const threshold = 50; // minimum distance for swipe
 
   const handleTouchStart = (e) => {
-    if (!e.touches || e.touches.length === 0) return;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
   };
 
   const handleTouchMove = (e) => {
-    if (!e.touches || e.touches.length === 0) return;
     endX = e.touches[0].clientX;
     endY = e.touches[0].clientY;
   };
@@ -192,16 +190,15 @@ useEffect(() => {
     const diffX = startX - endX;
     const diffY = startY - endY;
 
-    // Only trigger if mostly horizontal swipe
+    // horizontal swipe only
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
-      if (diffX > 0) next();      // swipe left → next
-      else prev();                // swipe right → prev
+      if (diffX > 0) setIndex(i => Math.min(i + 1, slides.length - 1)); // swipe left → next
+      else setIndex(i => Math.max(i - 1, 0));                             // swipe right → prev
     }
 
     startX = startY = endX = endY = 0;
   };
 
-  // 🔒 iPhone Safari needs non-passive listeners for touchmove
   el.addEventListener("touchstart", handleTouchStart, { passive: true });
   el.addEventListener("touchmove", handleTouchMove, { passive: true });
   el.addEventListener("touchend", handleTouchEnd, { passive: true });
@@ -212,6 +209,7 @@ useEffect(() => {
     el.removeEventListener("touchend", handleTouchEnd);
   };
 }, []);
+
 
 const slide = slides[index];
   const bgPos =
