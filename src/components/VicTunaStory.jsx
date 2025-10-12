@@ -220,7 +220,7 @@ const slide = slides[index];
                   )}
                   {(slides[index].id === 'story') && (
                     <p className="mt-3 text-sm uppercase tracking-widest flex items-center gap-2 text-white/90"><Calendar size={16} /> 
-                      {`${calculateRealDays()}+ peaceful days`}
+                      {`${calculateRealDays()}+ been together`}
                     </p>
                   )}
                   {slides[index].content && <p className="mt-6 max-w-xl text-gray-100/95">{slides[index].content}</p>}
