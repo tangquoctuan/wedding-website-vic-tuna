@@ -74,25 +74,28 @@ export default function VicTunaStory() {
   const [bgPositions, setBgPositions] = useState({});
 
   useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'ArrowRight') next();
-      if (e.key === 'ArrowLeft') prev();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  function onKey(e) {
+    if (lightbox) return; // prevent navigation if lightbox is open
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') prev();
+  }
+  window.addEventListener('keydown', onKey);
+  return () => window.removeEventListener('keydown', onKey);
+}, [lightbox]);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    function onWheel(e) {
-      if (Math.abs(e.deltaY) > 20) {
-        if (e.deltaY > 0) next(); else prev();
-      }
+  const el = containerRef.current;
+  if (!el) return;
+  function onWheel(e) {
+    if (lightbox) return; // prevent navigation if lightbox is open
+    if (Math.abs(e.deltaY) > 20) {
+      if (e.deltaY > 0) next();
+      else prev();
     }
-    el.addEventListener('wheel', onWheel, { passive: true });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, []);
+  }
+  el.addEventListener('wheel', onWheel, { passive: true });
+  return () => el.removeEventListener('wheel', onWheel);
+}, [lightbox]);
 
   // Auto-calculate background positions
   useEffect(() => {
@@ -256,7 +259,7 @@ const slide = slides[index];
               }}
               loading="eager" decoding="async"
             />
-            <div className="relative z-10 max-w-6xl mx-auto px-6 py-12 w-full">
+            <div className={slides[index].id === 'thanks' ? "relative z-10 max-w-6xl mx-auto px-6 py-12 w-full mt-60" : "relative z-10 max-w-6xl mx-auto px-6 py-12 w-full"}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div>
                   <h1 className="text-4xl md:text-5xl leading-tight">{slides[index].title}</h1>
@@ -281,7 +284,7 @@ const slide = slides[index];
                       </div>
                       <h3 className="font-semibold">{slides[index].venue}</h3>
                       <p className="mt-2 text-sm">Time: 12:00 AM — 25/12/2025</p>
-                      <a href="#map" onClick={(e)=>e.preventDefault()} className="mt-3 inline-flex items-center gap-2 text-sm underline"><MapPin size={14} /> View map</a>
+                      {/* <a href="#map" onClick={(e)=>e.preventDefault()} className="mt-3 inline-flex items-center gap-2 text-sm underline"><MapPin size={14} /> View map</a> */}
                     </div>
                     
                   )}
@@ -296,11 +299,11 @@ const slide = slides[index];
                       </div>
                       <h3 className="font-semibold">{slides[index].venue}</h3>
                       <p className="mt-2 text-sm">Time: 6:00 PM — 25/12/2025</p>
-                      <a href="#map" onClick={(e)=>e.preventDefault()} className="mt-3 inline-flex items-center gap-2 text-sm underline"><MapPin size={14} /> View map</a>
+                      {/* <a href="#map" onClick={(e)=>e.preventDefault()} className="mt-3 inline-flex items-center gap-2 text-sm underline"><MapPin size={14} /> View map</a> */}
                     </div>
                   )}
 
-                  {slides[index].id === 'rsvp' && (
+                  {/* {slides[index].id === 'rsvp' && (
                     <form onSubmit={submitRsvp} className="mt-8 max-w-md">
                       <label className="block text-sm">Your name</label>
                       <input className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.name} onChange={(e)=>setRsvp({...rsvp, name:e.target.value})} />
@@ -328,7 +331,7 @@ const slide = slides[index];
                         {status && (<span className={`text-sm ${status.ok ? 'text-green-300' : 'text-rose-300'}`}>{status.msg}</span>)}
                       </div>
                     </form>
-                  )}
+                  )} */}
                 </div>
 
                 <div>

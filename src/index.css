@@ -11,6 +11,6 @@ body {
 
 @media (max-width: 440px) {
   .mt-30-iphone {
-    margin-top: 12.5rem; /* same as mt-30 */
+    margin-top: 13rem; /* same as mt-30 */
   }
 }
