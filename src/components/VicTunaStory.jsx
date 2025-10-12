@@ -165,6 +165,54 @@ function getAutoBgPosition(src, callback) {
   img.onerror = () => callback("center center");
 }
 
+// 📱 Swipe navigation (iPhone-safe)
+useEffect(() => {
+  const el = containerRef.current;
+  if (!el) return;
+
+  let startX = 0;
+  let startY = 0;
+  let endX = 0;
+  let endY = 0;
+  const threshold = 50; // min px swipe distance
+
+  const handleTouchStart = (e) => {
+    if (!e.touches || e.touches.length === 0) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!e.touches || e.touches.length === 0) return;
+    endX = e.touches[0].clientX;
+    endY = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = () => {
+    const diffX = startX - endX;
+    const diffY = startY - endY;
+
+    // Only trigger if mostly horizontal swipe
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+      if (diffX > 0) next();      // swipe left → next
+      else prev();                // swipe right → prev
+    }
+
+    startX = startY = endX = endY = 0;
+  };
+
+  // 🔒 iPhone Safari needs non-passive listeners for touchmove
+  el.addEventListener("touchstart", handleTouchStart, { passive: true });
+  el.addEventListener("touchmove", handleTouchMove, { passive: true });
+  el.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+  return () => {
+    el.removeEventListener("touchstart", handleTouchStart);
+    el.removeEventListener("touchmove", handleTouchMove);
+    el.removeEventListener("touchend", handleTouchEnd);
+  };
+}, []);
+
 const slide = slides[index];
   const bgPos =
     slide.bgPosition ||
