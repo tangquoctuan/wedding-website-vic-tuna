@@ -32,6 +32,7 @@ export default defineConfig({
   ],  
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg', '**/*.webp'],
   server: {  
-    allowedHosts: true
+    allowedHosts: true,
+    cors: true, // This allows all origins
   }
 });

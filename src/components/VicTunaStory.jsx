@@ -50,12 +50,12 @@ export default function VicTunaStory() {
       bg: 'https://images.unsplash.com/photo-1760263952890-a93e531a3da7?auto=format&fit=crop&w=1600&q=80',
       venue: 'At Home, Binh Tay Ward, Ho Chi Minh. Followed by lunch and dinner at Văn Hoa Restaurant.'
     },
-    // {
-    //   id: 'rsvp',
-    //   title: 'Will you come?',
-    //   subtitle: 'Let us know so we can prepare warmly for you',
-    //   bg: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1600&q=80'
-    // },
+    {
+      id: 'rsvp',
+      title: 'Will you come?',
+      subtitle: 'Let us know so we can prepare warmly for you',
+      bg: 'https://images.unsplash.com/photo-1760463603459-15841811bd99?auto=format&fit=crop&w=1600&q=80'
+    },
     {
       id: 'thanks',
       title: 'We can’t wait to see you',
@@ -135,14 +135,39 @@ export default function VicTunaStory() {
   function next() { setIndex(i => Math.min(i + 1, slides.length - 1)); }
   function prev() { setIndex(i => Math.max(i - 1, 0)); }
 
-  function submitRsvp(e) {
+  async function submitRsvp(e) {
     e.preventDefault();
     if (!rsvp.name.trim()) {
       setStatus({ ok: false, msg: 'Please enter your name.' });
       return;
     }
+
+    if (rsvp.coming === "yes" && Number(rsvp.guests) <= 0) {
+      setStatus({ ok: false, msg: 'Please enter valid number of guest.' });
+      return;
+    }
+
     setStatus({ ok: null, msg: 'Sending...' });
-    setTimeout(() => setStatus({ ok: true, msg: 'Thank you! We’ve received your RSVP.' }), 900);
+    try {
+        const res = await fetch('https://script.google.com/macros/s/AKfycbzMG5tqX_7m95r5mgzsl7N1jejv6MWDlVrkx7i3J2uiR66O6pwbkTLkGmGq8zRKunw/exec', {
+          method: 'POST',
+          body: JSON.stringify(rsvp),
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },        
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          setStatus({ ok: true, msg: 'Thank you! We’ve received your RSVP.' });
+          setRsvp({ name: '', coming: 'yes', guests: 1, phoneNumber: '', note: '' });
+        } else {
+          throw new Error(data.message || 'Submission failed');
+        }
+      } catch (err) {
+        setStatus({ ok: false, msg: 'Something went wrong. Please try again.' });
+      }
   }
 
   function calculateRealDays() {
@@ -303,10 +328,10 @@ const slide = slides[index];
                     </div>
                   )}
 
-                  {/* {slides[index].id === 'rsvp' && (
+                  {slides[index].id === 'rsvp' && (
                     <form onSubmit={submitRsvp} className="mt-8 max-w-md">
                       <label className="block text-sm">Your name</label>
-                      <input className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.name} onChange={(e)=>setRsvp({...rsvp, name:e.target.value})} />
+                      <input required className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.name} onChange={(e)=>setRsvp({...rsvp, name:e.target.value})} />
 
                       <label className="block text-sm mt-4">Will you attend?</label>
                       <select className="mt-2 rounded-xl bg-white/5 p-3 w-40" value={rsvp.coming} onChange={(e)=>setRsvp({...rsvp, coming:e.target.value})}>
@@ -315,23 +340,20 @@ const slide = slides[index];
                       </select>
 
                       <label className="block text-sm mt-4">Number of guests</label>
-                      <input type="number" min={1} className="mt-2 w-32 rounded-xl bg-white/5 p-3" value={rsvp.guests} onChange={(e)=>setRsvp({...rsvp, guests: Number(e.target.value)})} />
+                      <input required type="number" min={1} className="mt-2 w-32 rounded-xl bg-white/5 p-3" value={rsvp.guests} onChange={(e)=>setRsvp({...rsvp, guests: Number(e.target.value)})} />
 
-                      <label className="block text-sm mt-4">Meal preferences (if any)</label>
-                      <input className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.food} onChange={(e)=>setRsvp({...rsvp, food: e.target.value})} />
-
-                      <label className="block text-sm mt-4">Would you like to perform a song?</label>
-                      <input className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.song} onChange={(e)=>setRsvp({...rsvp, song: e.target.value})} />
+                      <label className="block text-sm mt-4">Phone Number/ Zalo</label>
+                      <input required type="number" className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.phoneNumber} onChange={(e)=>setRsvp({...rsvp, food: e.target.value})} />                  
 
                       <label className="block text-sm mt-4">Message for us</label>
                       <textarea className="mt-2 w-full rounded-xl bg-white/5 p-3" rows={3} value={rsvp.note} onChange={(e)=>setRsvp({...rsvp, note: e.target.value})} />
 
                       <div className="mt-4 flex items-center gap-3">
-                        <button className="px-5 py-2 rounded-xl bg-white text-black font-semibold">Send RSVP</button>
+                        <button className="px-5 py-2 rounded-xl bg-white text-black font-semibold">Send</button>
                         {status && (<span className={`text-sm ${status.ok ? 'text-green-300' : 'text-rose-300'}`}>{status.msg}</span>)}
                       </div>
                     </form>
-                  )} */}
+                  )}
                 </div>
 
                 <div>
