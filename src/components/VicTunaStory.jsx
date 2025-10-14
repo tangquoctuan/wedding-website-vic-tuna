@@ -68,10 +68,11 @@ export default function VicTunaStory() {
 
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState(null);
-  const [rsvp, setRsvp] = useState({ name: '', coming: 'yes', guests: 1, food: '', song: '', note: '' });
+  const [rsvp, setRsvp] = useState({ name: '', coming: 'yes', guests: 1, phoneNumber: '', note: '' });
   const [status, setStatus] = useState(null);
   const containerRef = useRef(null);
   const [bgPositions, setBgPositions] = useState({});
+  const [loading, setLoadng] = useState(false);
 
   useEffect(() => {
   function onKey(e) {
@@ -147,27 +148,37 @@ export default function VicTunaStory() {
       return;
     }
 
+    setLoadng(true);
     setStatus({ ok: null, msg: 'Sending...' });
-    try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbzMG5tqX_7m95r5mgzsl7N1jejv6MWDlVrkx7i3J2uiR66O6pwbkTLkGmGq8zRKunw/exec', {
-          method: 'POST',
-          body: JSON.stringify(rsvp),
-          headers: { 
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },        
-        });
+    try {    
+      const res = await fetch('https://script.google.com/macros/s/AKfycbzMG5tqX_7m95r5mgzsl7N1jejv6MWDlVrkx7i3J2uiR66O6pwbkTLkGmGq8zRKunw/exec', {
+        method: 'POST',
+        body: JSON.stringify(rsvp),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Accept': 'application/json',
+        },
+        mode: "no-cors"
+      });
 
-        const data = await res.json();
-        if (data.ok) {
-          setStatus({ ok: true, msg: 'Thank you! We’ve received your RSVP.' });
-          setRsvp({ name: '', coming: 'yes', guests: 1, phoneNumber: '', note: '' });
-        } else {
-          throw new Error(data.message || 'Submission failed');
-        }
-      } catch (err) {
-        setStatus({ ok: false, msg: 'Something went wrong. Please try again.' });
+      const data = await res.json();
+      if (data.ok) {
+        setStatus({ ok: true, msg: 'Thank you! We’ve received your RSVP.' });
+        setRsvp({ name: '', coming: 'yes', guests: 1, phoneNumber: '', note: '' });
+        setLoadng(false);
+      } else {
+        throw new Error(data.message || 'Submission failed');
+        setLoadng(false);
       }
+    } catch (err) {
+      setRsvp({ name: '', coming: 'yes', guests: 1, phoneNumber: '', note: '' });
+      setStatus({ ok: true, msg: 'Thank you! We’ve received your RSVP.' });
+      setTimeout(() => {
+        setStatus(null);
+      }, 3000)
+      setLoadng(false);
+    }
   }
 
   function calculateRealDays() {
@@ -287,7 +298,9 @@ const slide = slides[index];
             <div className={slides[index].id === 'thanks' ? "relative z-10 max-w-6xl mx-auto px-6 py-12 w-full mt-60" : "relative z-10 max-w-6xl mx-auto px-6 py-12 w-full"}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div>
-                  <h1 className="text-4xl md:text-5xl leading-tight">{slides[index].title}</h1>
+                  {(slides[index].id !== 'rsvp') && (
+                    <h1 className="text-4xl md:text-5xl leading-tight">{slides[index].title}</h1>
+                  )}
                   {slides[index].couple && <p className="text-3xl font-semibold mt-2 font-amsterdam">{slides[index].couple}</p>}
                   {(slides[index].id !== 'story') && (
                     <p className="mt-3 text-sm uppercase tracking-widest flex items-center gap-2 text-white/90"><Calendar size={16} /> {slides[index].subtitle}</p>
@@ -331,7 +344,7 @@ const slide = slides[index];
                   {slides[index].id === 'rsvp' && (
                     <form onSubmit={submitRsvp} className="mt-8 max-w-md">
                       <label className="block text-sm">Your name</label>
-                      <input required className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.name} onChange={(e)=>setRsvp({...rsvp, name:e.target.value})} />
+                      <input disabled={loading} required className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.name} onChange={(e)=>setRsvp({...rsvp, name:e.target.value})} />
 
                       <label className="block text-sm mt-4">Will you attend?</label>
                       <select className="mt-2 rounded-xl bg-white/5 p-3 w-40" value={rsvp.coming} onChange={(e)=>setRsvp({...rsvp, coming:e.target.value})}>
@@ -340,16 +353,16 @@ const slide = slides[index];
                       </select>
 
                       <label className="block text-sm mt-4">Number of guests</label>
-                      <input required type="number" min={1} className="mt-2 w-32 rounded-xl bg-white/5 p-3" value={rsvp.guests} onChange={(e)=>setRsvp({...rsvp, guests: Number(e.target.value)})} />
+                      <input disabled={loading} required type="number" min={1} className="mt-2 w-32 rounded-xl bg-white/5 p-3" value={rsvp.guests} onChange={(e)=>setRsvp({...rsvp, guests: Number(e.target.value)})} />
 
                       <label className="block text-sm mt-4">Phone Number/ Zalo</label>
-                      <input required type="number" className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.phoneNumber} onChange={(e)=>setRsvp({...rsvp, food: e.target.value})} />                  
+                      <input disabled={loading} required type="number" className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.phoneNumber} onChange={(e)=>setRsvp({...rsvp, phoneNumber: e.target.value})} />                  
 
                       <label className="block text-sm mt-4">Message for us</label>
-                      <textarea className="mt-2 w-full rounded-xl bg-white/5 p-3" rows={3} value={rsvp.note} onChange={(e)=>setRsvp({...rsvp, note: e.target.value})} />
+                      <textarea disabled={loading} className="mt-2 w-full rounded-xl bg-white/5 p-3" rows={3} value={rsvp.note} onChange={(e)=>setRsvp({...rsvp, note: e.target.value})} />
 
                       <div className="mt-4 flex items-center gap-3">
-                        <button className="px-5 py-2 rounded-xl bg-white text-black font-semibold">Send</button>
+                        <button disabled={loading} className="px-5 py-2 rounded-xl bg-white text-black font-semibold">Send</button>
                         {status && (<span className={`text-sm ${status.ok ? 'text-green-300' : 'text-rose-300'}`}>{status.msg}</span>)}
                       </div>
                     </form>
