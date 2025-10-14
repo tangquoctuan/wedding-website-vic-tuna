@@ -355,10 +355,10 @@ const slide = slides[index];
                       <label className="block text-sm mt-4">Number of guests</label>
                       <input disabled={loading} required type="number" min={1} className="mt-2 w-32 rounded-xl bg-white/5 p-3" value={rsvp.guests} onChange={(e)=>setRsvp({...rsvp, guests: Number(e.target.value)})} />
 
-                      <label className="block text-sm mt-4">Phone Number/ Zalo</label>
+                      <label className="block text-sm mt-4">Phone Number/ Zalo - Please input valid phone number</label>
                       <input disabled={loading} required type="number" className="mt-2 w-full rounded-xl bg-white/5 p-3" value={rsvp.phoneNumber} onChange={(e)=>setRsvp({...rsvp, phoneNumber: e.target.value})} />                  
 
-                      <label className="block text-sm mt-4">Message for us</label>
+                      <label className="block text-sm mt-4">Any blessings for us?</label>
                       <textarea disabled={loading} className="mt-2 w-full rounded-xl bg-white/5 p-3" rows={3} value={rsvp.note} onChange={(e)=>setRsvp({...rsvp, note: e.target.value})} />
 
                       <div className="mt-4 flex items-center gap-3">
