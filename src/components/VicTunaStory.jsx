@@ -204,64 +204,54 @@ function getAutoBgPosition(src, callback) {
   img.onerror = () => callback("center center");
 }
 
-// 📱 Swipe-only navigation
+// 📱 Swipe-only navigation (improved)
 useEffect(() => {
   const el = containerRef.current;
   if (!el) return;
 
-  let startX = 0;
-  let startY = 0;
-  let endX = 0;
-  let endY = 0;
-  const threshold = 50;
+  let startX = 0, startY = 0, endX = 0, endY = 0;
+  let startTime = 0;
+  const threshold = 60; // pixels
+  const restraint = 80; // max vertical movement
+  const allowedTime = 600; // ms
 
   const handleTouchStart = (e) => {
-    // ✅ Ignore touches that start on interactive elements
     const tag = e.target.tagName.toLowerCase();
     if (['button', 'input', 'select', 'textarea', 'a', 'iframe', 'label'].includes(tag)) return;
-
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-  };
-
-  const handleTouchMove = (e) => {
-    const tag = e.target.tagName.toLowerCase();
-    if (['button', 'input', 'select', 'textarea', 'a', 'iframe', 'label'].includes(tag)) return;
-
-    const diffX = e.touches[0].clientX - startX;
-    const diffY = e.touches[0].clientY - startY;
-
-    if (Math.abs(diffX) > Math.abs(diffY)) {
-      e.preventDefault(); // stop page scrolling horizontally
-    }
-
-    endX = e.touches[0].clientX;
-    endY = e.touches[0].clientY;
+    const touchObj = e.changedTouches[0];
+    startX = touchObj.pageX;
+    startY = touchObj.pageY;
+    startTime = new Date().getTime(); // record time when finger first makes contact
   };
 
   const handleTouchEnd = (e) => {
     const tag = e.target.tagName.toLowerCase();
     if (['button', 'input', 'select', 'textarea', 'a', 'iframe', 'label'].includes(tag)) return;
 
-    const diffX = startX - endX;
-    const diffY = startY - endY;
+    const touchObj = e.changedTouches[0];
+    endX = touchObj.pageX;
+    endY = touchObj.pageY;
 
-    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
-      if (diffX > 0) setIndex((i) => Math.min(i + 1, slides.length - 1)); // left → next
-      else setIndex((i) => Math.max(i - 1, 0)); // right → prev
+    const distX = endX - startX;
+    const distY = endY - startY;
+    const elapsedTime = new Date().getTime() - startTime;
+
+    // Only trigger if swipe happened fast and mostly horizontal
+    if (elapsedTime <= allowedTime && Math.abs(distX) >= threshold && Math.abs(distY) <= restraint) {
+      if (distX < 0) setIndex((i) => Math.min(i + 1, slides.length - 1)); // swipe left → next
+      else setIndex((i) => Math.max(i - 1, 0)); // swipe right → prev
     }
 
+    // reset
     startX = startY = endX = endY = 0;
   };
 
-  el.addEventListener("touchstart", handleTouchStart, { passive: true });
-  el.addEventListener("touchmove", handleTouchMove, { passive: false });
-  el.addEventListener("touchend", handleTouchEnd, { passive: true });
+  el.addEventListener('touchstart', handleTouchStart, { passive: true });
+  el.addEventListener('touchend', handleTouchEnd, { passive: true });
 
   return () => {
-    el.removeEventListener("touchstart", handleTouchStart);
-    el.removeEventListener("touchmove", handleTouchMove);
-    el.removeEventListener("touchend", handleTouchEnd);
+    el.removeEventListener('touchstart', handleTouchStart);
+    el.removeEventListener('touchend', handleTouchEnd);
   };
 }, []);
 
