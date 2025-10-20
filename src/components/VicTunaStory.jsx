@@ -213,33 +213,49 @@ useEffect(() => {
   let startY = 0;
   let endX = 0;
   let endY = 0;
-  const threshold = 50; // minimum distance for swipe
+  const threshold = 50;
 
   const handleTouchStart = (e) => {
+    // ✅ Ignore touches that start on interactive elements
+    const tag = e.target.tagName.toLowerCase();
+    if (['button', 'input', 'select', 'textarea', 'a', 'iframe', 'label'].includes(tag)) return;
+
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
   };
 
   const handleTouchMove = (e) => {
+    const tag = e.target.tagName.toLowerCase();
+    if (['button', 'input', 'select', 'textarea', 'a', 'iframe', 'label'].includes(tag)) return;
+
+    const diffX = e.touches[0].clientX - startX;
+    const diffY = e.touches[0].clientY - startY;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      e.preventDefault(); // stop page scrolling horizontally
+    }
+
     endX = e.touches[0].clientX;
     endY = e.touches[0].clientY;
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    const tag = e.target.tagName.toLowerCase();
+    if (['button', 'input', 'select', 'textarea', 'a', 'iframe', 'label'].includes(tag)) return;
+
     const diffX = startX - endX;
     const diffY = startY - endY;
 
-    // horizontal swipe only
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
-      if (diffX > 0) setIndex(i => Math.min(i + 1, slides.length - 1)); // swipe left → next
-      else setIndex(i => Math.max(i - 1, 0));                             // swipe right → prev
+      if (diffX > 0) setIndex((i) => Math.min(i + 1, slides.length - 1)); // left → next
+      else setIndex((i) => Math.max(i - 1, 0)); // right → prev
     }
 
     startX = startY = endX = endY = 0;
   };
 
   el.addEventListener("touchstart", handleTouchStart, { passive: true });
-  el.addEventListener("touchmove", handleTouchMove, { passive: true });
+  el.addEventListener("touchmove", handleTouchMove, { passive: false });
   el.addEventListener("touchend", handleTouchEnd, { passive: true });
 
   return () => {
@@ -257,7 +273,7 @@ const slide = slides[index];
     (window.innerWidth < 768 ? "center 25%" : "center center");
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white" ref={containerRef}>
+    <div className="min-h-screen bg-gray-900 text-white select-none overflow-hidden" ref={containerRef}>
       <header className="fixed top-4 left-4 right-4 z-40 flex items-center justify-between">
         <div className="bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-2 flex items-center gap-3">
           <button onClick={() => setIndex(0)} className="text-sm font-semibold">Home</button>
